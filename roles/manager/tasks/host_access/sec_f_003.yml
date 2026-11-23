@@ -58,6 +58,7 @@
         line: "    <list>etc/lists/{{ item }}</list>"
         insertbefore: '^\s*</ruleset>'
         firstmatch: true
+        backup: true   # ossec.conf.<date>~ next to it, written only when a line is added
       loop:
         - service-accounts
         - standard-accounts
