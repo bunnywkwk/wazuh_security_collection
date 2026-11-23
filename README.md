@@ -61,14 +61,15 @@ A counter must load before the thresholds that count it. The names keep that ord
 
 | Requirement | Kind | Rule IDs | Built on |
 |---|---|---|---|
-| SEC-F-005 sudo and su that worked (refusals excluded) | record | 100104 | sudo 5402, 5403, 5407; su 5303, 5304 |
+| SEC-F-005 sudo that worked (refusals excluded) | record | 100104 | sudo 5402, 5403, 5407 |
+| SEC-F-005 su that worked | record | 100108 | PAM session opened 5501, `su` / `su-l` only |
 | SEC-F-006 admin commands run as root | audit rule (agent) + record | 100105 | audit rule key `audit-wazuh-c`, built-in 80792 |
-| SEC-F-018 failed sudo and su, also the counter for SEC-TH-007 | record | 100100 | sudo 5401, 5404, 5405; su 5301, 5302; 100107 |
+| SEC-F-018 failed sudo and su, also the counter for SEC-TH-007 | record | 100100 | sudo 5401, 5404, 5405, 5406; 100107; 100109 |
+| SEC-F-018 su failed, with the account | helper, never the alert | 100109 | PAM auth failure 5503, `su` / `su-l` only |
 | SEC-F-018 sudo refused (wrong password, not in sudoers, command not allowed) wherever it lands | helper, never the alert | 100107 | 5400, sudo success rules |
 | SEC-TH-007 failed elevation, one account | threshold | 100101 / 100102 | 100100 |
 | SEC-F-019 direct root login, SSH and console | alert | 100103 / 100106 | 100110 / 100123 (Host Access) |
 
-The built-in IDs are variables (`manager_sec_f_005_*_sids`, `manager_sec_f_018_*_sids`, `manager_sec_f_006_sid`): check them against your manager's ruleset before the first run.
 
 ## Install
 
@@ -117,12 +118,11 @@ manager_nologin_shells              shells that cannot log in
 manager_silence_5763
 manager_privileged_activity         group switch
 manager_sec_f_005 ... 019           one per requirement
-manager_sec_f_005_sudo_sids / _su_sids, manager_sec_f_018_sudo_sids / _su_sids, manager_sec_f_006_sid   built-in rules built on
 manager_th_007_*                    Annex B warning / critical / timeframe
 manager_sec_f_019_users             accounts a direct login to is an alert (default "^root$")
 ```
 
-`roles/agent/defaults/main.yml`: `agent_privileged_activity`, `agent_sec_f_006`, `agent_sec_f_006_key`, `agent_sec_f_006_commands` (paths audited; only the installed ones get a line).
+`roles/agent/defaults/main.yml`: `agent_privileged_activity`, `agent_sec_f_006`, `agent_sec_f_006_commands` (paths audited; only the installed ones get a line).
 
 ### Service and standard account lists (SEC-TH-001, 002)
 
@@ -137,6 +137,8 @@ Test: `python3 tests/unit/test_accounts.py`.
 
 Switching a rule to `false` skips it; a file deployed earlier stays until you delete it.
 
+Built-in rule IDs, match phrases and the audit key `audit-wazuh-c` are written in the templates, not variables: they are facts of Wazuh's ruleset, not site choices (Host Access does the same). A Wazuh version that renumbers them needs a new collection version.
+
 ## Adding a requirement
 
 1. The template in `roles/manager/templates/<group>/<kind>/`.
@@ -149,7 +151,8 @@ Switching a rule to `false` skips it; a file deployed earlier stays until you de
 - The manager role tests the ruleset with `wazuh-analysisd -t` before restarting; a broken rule stops the play and the running manager keeps its old rules.
 - A failure that fires a warning is not counted again toward critical: critical fires one event late (found in Annex B testing).
 - Attempts on accounts that do not exist (sshd `invalid user`, built-in 5710) are recorded (100124) but never counted: the thresholds are about real accounts, as in Annex B.
-- A refused sudo line also contains `USER=root ; COMMAND=`, so it could land on a built-in success rule: 100104 excludes the refusal phrases (`manager_sudo_refused_match`) and 100107 sends them to 100100.
+- A refused sudo line also contains `USER=root ; COMMAND=`, so it could land on a built-in success rule: 100104 excludes the refusal phrases and 100107 sends them to 100100.
+- su on RHEL 9: the `(to <user>) <who> on` line gets no built-in rule and `FAILED SU` decodes no account, so su uses its PAM lines (5501 session opened, 5503 auth failure), which carry both accounts.
 - SEC-F-019 rules are children of Host Access records 100110 and 100123: the task stops if SEC-F-001 or 016 is off.
 - Immutable audit (`-e 2`) loads the SEC-F-006 rule only after a reboot; the agent role reports it instead of failing.
 - Record rules replace the built-in alert with their own, so they carry the built-in's main groups (`sshd`, `authentication_failed` ...) to keep the default dashboards filled.

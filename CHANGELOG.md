@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.1 (2026-11-23)
+- su uses its PAM lines (checked with real RHEL 9 lines): SEC-F-005 su = 100108 on 5501, SEC-F-018 su = helper 100109 on 5503, so SEC-TH-007 counts su failures per account. 5301-5304 dropped: no rule for the success line, no account in FAILED SU, and counting both lines would double each failure.
+- Built-in rule IDs, sudo refusal phrases and the audit key are written in the templates (like Host Access); removed variables: manager_sec_f_005_sudo_sids, manager_sec_f_018_sudo_sids, manager_sudo_group_sid, manager_sudo_refused_match, manager_pam_session_opened_sid, manager_pam_auth_failed_sid, manager_sec_f_006_sid, manager_sec_f_006_key, agent_sec_f_006_key.
+- SEC-F-018: built-in 5406 "Command not allowed" added to manager_sec_f_018_sudo_sids; verify showed it took the line before our helper 100107.
+
 ## 0.8.0 (2026-11-23)
 - Privileged Activity back, in the per-requirement layout: SEC-F-005 (100104), SEC-F-006 (100105 + agent audit rule), SEC-F-018 (100100), SEC-TH-007 (100101 / 100102), SEC-F-019 (100103 SSH, 100106 console).
 - agent role back: SEC-F-006 audits a list of admin commands (only the installed ones) instead of every root command; immutable audit is reported, not failed.

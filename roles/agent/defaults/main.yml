@@ -12,7 +12,6 @@ agent_sec_f_006: true   # AUDIT RULE admin commands run as root by a logged-in u
 ## Settings
 
 ### SEC-F-006
-agent_sec_f_006_key: audit-wazuh-c   # Wazuh's audit-keys list maps it to "command"
 # Security-relevant admin commands (sheet: "set to be defined"); one audit line per installed path
 agent_sec_f_006_commands:
   - /usr/sbin/useradd
