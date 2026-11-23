@@ -1,0 +1,6 @@
+## {{ ansible_managed }}
+## SEC-F-006: security-relevant admin commands run by a logged-in user (auid set), any outcome.
+## Key {{ agent_sec_f_006_key }} is in Wazuh's audit-keys list, so the manager's audit rule alerts on it.
+{% for cmd in agent_sec_f_006_installed %}
+-a always,exit -F path={{ cmd }} -F perm=x -F auid>=1000 -F auid!=unset -k {{ agent_sec_f_006_key }}
+{% endfor %}

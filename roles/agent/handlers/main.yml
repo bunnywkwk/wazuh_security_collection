@@ -1,0 +1,13 @@
+---
+# Immutable audit (-e 2, CIS hardening) refuses new rules until a reboot: reported, not a failure
+- name: Load audit rules
+  ansible.builtin.command: augenrules --load
+  register: agent_augenrules
+  changed_when: true
+  failed_when: agent_augenrules.rc != 0 and 'immutable' not in (agent_augenrules.stdout + agent_augenrules.stderr)
+  notify: Report audit reboot needed
+
+- name: Report audit reboot needed
+  when: "'immutable' in (agent_augenrules.stdout + agent_augenrules.stderr)"
+  ansible.builtin.debug:
+    msg: "Audit is immutable on {{ inventory_hostname }}: the SEC-F-006 rule loads after a reboot."

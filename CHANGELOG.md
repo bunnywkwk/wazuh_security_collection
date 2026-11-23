@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.0 (2026-11-23)
+- Privileged Activity back, in the per-requirement layout: SEC-F-005 (100104), SEC-F-006 (100105 + agent audit rule), SEC-F-018 (100100), SEC-TH-007 (100101 / 100102), SEC-F-019 (100103 SSH, 100106 console).
+- agent role back: SEC-F-006 audits a list of admin commands (only the installed ones) instead of every root command; immutable audit is reported, not failed.
+- SEC-F-019 hangs on the Host Access records 100110 / 100123, so SEC-F-001 needs no root exclusion.
+- Built-in rule IDs for sudo, su and audit are variables, to confirm on the manager.
+- SEC-F-018 covers "command not allowed" and every refused sudo wherever it lands (helper 100107, built-in 5404 added); SEC-F-005 never records a refusal.
+
 ## 0.7.1 (2026-11-23)
 - SEC-TH-001 / 002 list lookup uses field="user" (Wazuh's name for the account field); field="dstuser" never matched, found by verify.yml.
 

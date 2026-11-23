@@ -3,8 +3,9 @@
 Ansible collection that deploys Wazuh detection for the RHEL security monitoring requirements, one security group at a time. No custom decoders: every rule builds on Wazuh's built-in decoders and rules.
 
 - **manager** role: one rules file per requirement, `/var/ossec/etc/rules/<id>.xml` (`local_rules.xml` is never touched), and CDB lists in `/var/ossec/etc/lists/`, declared in `ossec.conf` (the only change there)
+- **agent** role: what a host must log for the manager rules, one file per requirement (audit rules in `/etc/audit/rules.d/50-wazuh-<id>.rules`)
 
-Current group: **Host Access**. Privileged Activity (with its agent audit rules) is parked as of 0.4.0.
+Groups: **Host Access**, **Privileged Activity**.
 
 ## Kinds of rules
 
@@ -14,6 +15,8 @@ Current group: **Host Access**. Privileged Activity (with its agent audit rules)
 | **threshold** | `threshold/` | the requirement has a count in Annex B | SEC-TH-003: 3 / 5 failed root logins in 5 min |
 | **overwrite** | `overwrite/` | a built-in rule changed in place | built-in 5763 set to level 0 |
 | **list** | `list/` | names the rules look up (CDB list) | `etc/lists/service-accounts` for SEC-TH-001 |
+| **alert** | `record/` | a single event that is itself the finding | SEC-F-019 direct root login |
+| **audit rule** | agent `audit/` | the host must log it first | SEC-F-006 admin commands |
 | **gap** | none | the host cannot see it: no rule, written down in the defaults file | SEC-F-016 BMC access |
 
 ## Layout
@@ -29,6 +32,10 @@ roles/manager/templates/host_access/record/       sec_f_001, 002, 004, 016
 roles/manager/templates/host_access/threshold/    sec_th_001 to 005
 roles/manager/templates/host_access/overwrite/    silence_5763
 roles/manager/templates/host_access/list/         accounts.j2 -> etc/lists/service-accounts, standard-accounts
+roles/manager/templates/privileged_activity/record/      sec_f_005, 006, 018, 019
+roles/manager/templates/privileged_activity/threshold/   sec_th_007
+roles/agent/tasks/privileged_activity/sec_f_006.yml       "SEC-F-006 | AUDIT RULE | Record admin commands run as root"
+roles/agent/templates/privileged_activity/audit/          sec_f_006.rules
 plugins/filter/accounts.py                        filter sort_accounts
 ```
 
@@ -49,6 +56,19 @@ A counter must load before the thresholds that count it. The names keep that ord
 | SEC-F-003 built-in 5763 silenced | overwrite | 5763 | 5760 |
 | SEC-F-004 logout (SSH, console) | record | 100122 | 5502 |
 | SEC-F-016 console / serial login | record; BMC part is a gap | 100123 | 5501 |
+
+## Privileged Activity (100100-100109)
+
+| Requirement | Kind | Rule IDs | Built on |
+|---|---|---|---|
+| SEC-F-005 sudo and su that worked (refusals excluded) | record | 100104 | sudo 5402, 5403, 5407; su 5303, 5304 |
+| SEC-F-006 admin commands run as root | audit rule (agent) + record | 100105 | audit rule key `audit-wazuh-c`, built-in 80792 |
+| SEC-F-018 failed sudo and su, also the counter for SEC-TH-007 | record | 100100 | sudo 5401, 5404, 5405; su 5301, 5302; 100107 |
+| SEC-F-018 sudo refused (wrong password, not in sudoers, command not allowed) wherever it lands | helper, never the alert | 100107 | 5400, sudo success rules |
+| SEC-TH-007 failed elevation, one account | threshold | 100101 / 100102 | 100100 |
+| SEC-F-019 direct root login, SSH and console | alert | 100103 / 100106 | 100110 / 100123 (Host Access) |
+
+The built-in IDs are variables (`manager_sec_f_005_*_sids`, `manager_sec_f_018_*_sids`, `manager_sec_f_006_sid`): check them against your manager's ruleset before the first run.
 
 ## Install
 
@@ -74,6 +94,12 @@ ansible-galaxy collection install -r requirements.yml --force
   become: true
   roles:
     - bunnywkwk.wazuh_security.manager   # --tags sec_f_001 / host_access / record / threshold to run part of it
+
+- name: Deploy what the agents must log
+  hosts: wazuh_agents
+  become: true
+  roles:
+    - bunnywkwk.wazuh_security.agent
 ```
 
 ## Variables
@@ -89,7 +115,14 @@ manager_th_003_users                privileged accounts regex
 manager_account_hosts               hosts whose /etc/passwd is read (default: inventory group wazuh_agents)
 manager_nologin_shells              shells that cannot log in
 manager_silence_5763
+manager_privileged_activity         group switch
+manager_sec_f_005 ... 019           one per requirement
+manager_sec_f_005_sudo_sids / _su_sids, manager_sec_f_018_sudo_sids / _su_sids, manager_sec_f_006_sid   built-in rules built on
+manager_th_007_*                    Annex B warning / critical / timeframe
+manager_sec_f_019_users             accounts a direct login to is an alert (default "^root$")
 ```
+
+`roles/agent/defaults/main.yml`: `agent_privileged_activity`, `agent_sec_f_006`, `agent_sec_f_006_key`, `agent_sec_f_006_commands` (paths audited; only the installed ones get a line).
 
 ### Service and standard account lists (SEC-TH-001, 002)
 
@@ -116,4 +149,7 @@ Switching a rule to `false` skips it; a file deployed earlier stays until you de
 - The manager role tests the ruleset with `wazuh-analysisd -t` before restarting; a broken rule stops the play and the running manager keeps its old rules.
 - A failure that fires a warning is not counted again toward critical: critical fires one event late (found in Annex B testing).
 - Attempts on accounts that do not exist (sshd `invalid user`, built-in 5710) are recorded (100124) but never counted: the thresholds are about real accounts, as in Annex B.
+- A refused sudo line also contains `USER=root ; COMMAND=`, so it could land on a built-in success rule: 100104 excludes the refusal phrases (`manager_sudo_refused_match`) and 100107 sends them to 100100.
+- SEC-F-019 rules are children of Host Access records 100110 and 100123: the task stops if SEC-F-001 or 016 is off.
+- Immutable audit (`-e 2`) loads the SEC-F-006 rule only after a reboot; the agent role reports it instead of failing.
 - Record rules replace the built-in alert with their own, so they carry the built-in's main groups (`sshd`, `authentication_failed` ...) to keep the default dashboards filled.

@@ -1,0 +1,4 @@
+---
+- name: "GROUP | SEC-F-006 | Admin commands"
+  ansible.builtin.import_tasks:
+    file: sec_f_006.yml

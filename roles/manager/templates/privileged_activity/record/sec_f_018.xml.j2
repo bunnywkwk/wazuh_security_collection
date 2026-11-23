@@ -1,0 +1,20 @@
+<!-- {{ ansible_managed }} -->
+<!-- SEC-F-018 RECORD: failed sudo or su (wrong password, not in sudoers, command not allowed).
+     SEC-TH-007 (sec_th_007.xml) counts 100100. -->
+<group name="privileged_activity,">
+  <!-- A refused sudo wherever it lands: the sudo parent or a built-in success rule (its line also has
+       "USER=root ; COMMAND="). Covers "command not allowed", which has no built-in failure rule.
+       Never the alert: 100100 below is its child. -->
+  <rule id="100107" level="5">
+    <if_sid>{{ ([manager_sudo_group_sid] + manager_sec_f_005_sudo_sids) | join(', ') }}</if_sid>
+    <match>{{ manager_sudo_refused_match }}</match>
+    <description>SEC-F-018: sudo refused for $(srcuser).</description>
+    <group>sec_f_018,</group>
+  </rule>
+
+  <rule id="100100" level="5">
+    <if_sid>{{ (manager_sec_f_018_sudo_sids + manager_sec_f_018_su_sids + [100107]) | join(', ') }}</if_sid>
+    <description>SEC-F-018: failed privilege elevation by $(srcuser).</description>
+    <group>sec_f_018,</group>
+  </rule>
+</group>

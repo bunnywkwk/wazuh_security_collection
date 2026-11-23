@@ -3,6 +3,7 @@
 
 ## Groups
 manager_host_access: true
+manager_privileged_activity: true   # SEC-F-006 also needs the agent role
 
 ## Rules
 # false = skipped (a file deployed earlier stays: delete it by hand)
@@ -13,6 +14,12 @@ manager_sec_f_002: true   # RECORD failed SSH login (also deployed for SEC-F-003
 manager_sec_f_003: true   # THRESHOLD brute force, SEC-TH-001 to 005
 manager_sec_f_004: true   # RECORD logout
 manager_sec_f_016: true   # RECORD console login; GAP: BMC access
+
+## Group: Privileged Activity (rule IDs 100100-100109)
+manager_sec_f_005: true   # RECORD sudo and su that worked
+manager_sec_f_006: true   # RECORD admin commands (audit rule on the agent role)
+manager_sec_f_018: true   # RECORD failed sudo and su; THRESHOLD SEC-TH-007
+manager_sec_f_019: true   # ALERT direct root login, SSH and console (needs SEC-F-001 and 016)
 
 ## Settings
 
@@ -48,3 +55,26 @@ manager_th_004_timeframe: 300
 manager_th_005_warning: 5
 manager_th_005_critical: 10
 manager_th_005_timeframe: 1800
+
+### SEC-F-005 built-in rules it builds on (confirm on the manager: Page 1)
+manager_sec_f_005_sudo_sids: [5402, 5403, 5407]
+manager_sec_f_005_su_sids: [5303, 5304]
+
+### SEC-F-006
+manager_sec_f_006_sid: 80792            # built-in audit rule for keys of type "command"
+manager_sec_f_006_key: audit-wazuh-c    # same key in the agent role
+
+### SEC-F-018 built-in rules it builds on (confirm on the manager: Page 1)
+manager_sec_f_018_sudo_sids: [5401, 5404, 5405]   # wrong password (5404: 3 of them), not in sudoers
+manager_sudo_group_sid: 5400   # built-in parent of every sudo line
+# sudo lines that are refusals: SEC-F-018, never SEC-F-005 (they also contain "USER=root ; COMMAND=")
+manager_sudo_refused_match: "command not allowed|user NOT in sudoers|incorrect password attempt"
+manager_sec_f_018_su_sids: [5301, 5302]
+
+#### SEC-TH-007 failed elevation, one account
+manager_th_007_warning: 3
+manager_th_007_critical: 5
+manager_th_007_timeframe: 600
+
+### SEC-F-019
+manager_sec_f_019_users: "^root$"

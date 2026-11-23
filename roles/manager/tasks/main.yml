@@ -3,3 +3,8 @@
   when: manager_host_access
   ansible.builtin.import_tasks:
     file: host_access/main.yml
+
+- name: Run group - Privileged Activity
+  when: manager_privileged_activity
+  ansible.builtin.import_tasks:
+    file: privileged_activity/main.yml

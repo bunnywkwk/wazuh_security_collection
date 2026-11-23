@@ -1,0 +1,16 @@
+---
+- name: "SEC-F-006 | RECORD | Record admin commands (agent audit rule)"
+  when: manager_sec_f_006
+  tags:
+    - privileged_activity
+    - sec_f_006
+    - record
+  ansible.builtin.template:
+    src: privileged_activity/record/sec_f_006.xml.j2
+    dest: /var/ossec/etc/rules/sec_f_006.xml
+    owner: wazuh
+    group: wazuh
+    mode: "0660"
+  notify:
+    - Test the manager rules
+    - Restart wazuh-manager

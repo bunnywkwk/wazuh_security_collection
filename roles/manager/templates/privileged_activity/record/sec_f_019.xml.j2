@@ -1,0 +1,20 @@
+<!-- {{ ansible_managed }} -->
+<!-- SEC-F-019 ALERT: login straight to root, not elevation from a named user.
+     Children of the Host Access records, so the file loads after sec_f_001.xml and sec_f_016.xml. -->
+<group name="privileged_activity,">
+  <rule id="100103" level="10">
+    <if_sid>100110</if_sid>
+    <user type="pcre2">{{ manager_sec_f_019_users }}</user>
+    <description>SEC-F-019: direct SSH login to $(dstuser) from $(srcip).</description>
+    <mitre><id>T1078.003</id></mitre>
+    <group>sec_f_019,sec_f_001,sshd,authentication_success,</group>
+  </rule>
+
+  <rule id="100106" level="10">
+    <if_sid>100123</if_sid>
+    <user type="pcre2">{{ manager_sec_f_019_users }}</user>
+    <description>SEC-F-019: direct console login to $(dstuser).</description>
+    <mitre><id>T1078.003</id></mitre>
+    <group>sec_f_019,sec_f_016,pam,authentication_success,</group>
+  </rule>
+</group>

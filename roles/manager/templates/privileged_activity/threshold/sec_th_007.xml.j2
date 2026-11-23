@@ -1,0 +1,19 @@
+<!-- {{ ansible_managed }} -->
+<!-- SEC-TH-007 THRESHOLD (SEC-F-018): failed elevation by one account (srcuser = the user who ran sudo or su) -->
+<group name="privileged_activity,">
+  <rule id="100101" level="9" frequency="{{ manager_th_007_warning }}" timeframe="{{ manager_th_007_timeframe }}">
+    <if_matched_sid>100100</if_matched_sid>
+    <same_srcuser />
+    <description>SEC-TH-007 WARNING: $(srcuser) failed elevation {{ manager_th_007_warning }} times in {{ manager_th_007_timeframe // 60 }} minutes.</description>
+    <mitre><id>T1548.003</id></mitre>
+    <group>sec_f_018,sec_th_007,</group>
+  </rule>
+
+  <rule id="100102" level="13" frequency="{{ manager_th_007_critical }}" timeframe="{{ manager_th_007_timeframe }}">
+    <if_matched_sid>100100</if_matched_sid>
+    <same_srcuser />
+    <description>SEC-TH-007 CRITICAL: $(srcuser) failed elevation {{ manager_th_007_critical }} times in {{ manager_th_007_timeframe // 60 }} minutes.</description>
+    <mitre><id>T1548.003</id></mitre>
+    <group>sec_f_018,sec_th_007,</group>
+  </rule>
+</group>

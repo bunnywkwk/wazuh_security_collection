@@ -1,0 +1,5 @@
+---
+- name: Run group - Privileged Activity
+  when: agent_privileged_activity
+  ansible.builtin.import_tasks:
+    file: privileged_activity/main.yml

@@ -1,0 +1,25 @@
+---
+- name: "SEC-F-019 | ALERT | Alert on direct root login"
+  when: manager_sec_f_019
+  tags:
+    - privileged_activity
+    - sec_f_019
+    - alert
+  block:
+    # The rules are children of the Host Access records 100110 (SSH) and 100123 (console)
+    - name: "SEC-F-019 | ALERT | Alert on direct root login | Check its parent rules are deployed"
+      ansible.builtin.assert:
+        that: manager_host_access and manager_sec_f_001 and manager_sec_f_016
+        fail_msg: "SEC-F-019 builds on SEC-F-001 (100110) and SEC-F-016 (100123): turn them on, or turn manager_sec_f_019 off."
+        quiet: true
+
+    - name: "SEC-F-019 | ALERT | Alert on direct root login | Deploy the rule"
+      ansible.builtin.template:
+        src: privileged_activity/record/sec_f_019.xml.j2
+        dest: /var/ossec/etc/rules/sec_f_019.xml
+        owner: wazuh
+        group: wazuh
+        mode: "0660"
+      notify:
+        - Test the manager rules
+        - Restart wazuh-manager

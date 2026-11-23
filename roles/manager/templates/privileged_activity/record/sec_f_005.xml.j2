@@ -1,0 +1,11 @@
+<!-- {{ ansible_managed }} -->
+<!-- SEC-F-005 RECORD: sudo or su worked. User and command are in the alert (srcuser, dstuser, command). -->
+<group name="privileged_activity,">
+  <rule id="100104" level="3">
+    <if_sid>{{ (manager_sec_f_005_sudo_sids + manager_sec_f_005_su_sids) | join(', ') }}</if_sid>
+    <!-- a refused sudo also has "USER=root ; COMMAND=": it is SEC-F-018, not a success -->
+    <match negate="yes">{{ manager_sudo_refused_match }}</match>
+    <description>SEC-F-005: $(srcuser) elevated to $(dstuser).</description>
+    <group>sec_f_005,</group>
+  </rule>
+</group>
