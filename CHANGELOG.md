@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.7.1 (2026-11-23)
+- SEC-TH-001 / 002 list lookup uses field="user" (Wazuh's name for the account field); field="dstuser" never matched, found by verify.yml.
+
 ## 0.7.0 (2026-11-23)
 - SEC-F-002 also records failed logins for accounts that do not exist (100124, on built-in 5710), searchable as sec_f_002; not counted by SEC-TH-001 to 005.
 - Levels aligned with the validated Annex B write-up: SEC-TH-001 8 / 12, SEC-TH-004 critical 13.

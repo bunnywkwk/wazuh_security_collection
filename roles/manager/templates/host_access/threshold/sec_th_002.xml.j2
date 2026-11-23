@@ -4,7 +4,7 @@
 <group name="host_access,">
   <rule id="100114" level="8" frequency="{{ manager_th_002_warning }}" timeframe="{{ manager_th_002_timeframe }}">
     <if_matched_sid>100111</if_matched_sid>
-    <list field="dstuser" lookup="match_key">etc/lists/standard-accounts</list>
+    <list field="user" lookup="match_key">etc/lists/standard-accounts</list>
     <same_user />
     <same_srcip />
     <description>SEC-TH-002 WARNING: $(dstuser) failed login {{ manager_th_002_warning }} times in {{ manager_th_002_timeframe // 60 }} minutes from $(srcip).</description>
@@ -14,7 +14,7 @@
 
   <rule id="100115" level="12" frequency="{{ manager_th_002_critical }}" timeframe="{{ manager_th_002_timeframe }}">
     <if_matched_sid>100111</if_matched_sid>
-    <list field="dstuser" lookup="match_key">etc/lists/standard-accounts</list>
+    <list field="user" lookup="match_key">etc/lists/standard-accounts</list>
     <same_user />
     <same_srcip />
     <description>SEC-TH-002 CRITICAL: $(dstuser) failed login {{ manager_th_002_critical }} times in {{ manager_th_002_timeframe // 60 }} minutes from $(srcip).</description>

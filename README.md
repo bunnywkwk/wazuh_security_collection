@@ -98,7 +98,7 @@ At every run the role reads `/etc/passwd` and `/etc/login.defs` on `manager_acco
 - **standard**: UID from `UID_MIN` to `UID_MAX` with a login shell
 - **service**: every other account (system UIDs, `nologin` shells, `nobody`), except root (SEC-TH-003)
 
-The lists are the union over all hosts, written as CDB lists `/var/ossec/etc/lists/service-accounts` and `standard-accounts` (one `name:` per line) and declared in `ossec.conf`. The rules look them up with `<list field="dstuser" lookup="match_key">`, so the rule XML never changes when accounts do. Rerun the playbook after accounts are added. Only local accounts are listed: a `svc_` name that does not exist on any agent is not counted by SEC-TH-001 (SEC-TH-004 / 005 still count it). Accounts that exist only in a directory (IdM, LDAP) are not in `/etc/passwd`, so SEC-TH-002 does not count them.
+The lists are the union over all hosts, written as CDB lists `/var/ossec/etc/lists/service-accounts` and `standard-accounts` (one `name:` per line) and declared in `ossec.conf`. The rules look them up with `<list field="user" lookup="match_key">`, so the rule XML never changes when accounts do. Rerun the playbook after accounts are added. Only local accounts are listed: a `svc_` name that does not exist on any agent is not counted by SEC-TH-001 (SEC-TH-004 / 005 still count it). Accounts that exist only in a directory (IdM, LDAP) are not in `/etc/passwd`, so SEC-TH-002 does not count them.
 
 Test: `python3 tests/unit/test_accounts.py`.
 
