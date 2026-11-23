@@ -1,0 +1,16 @@
+---
+- name: "SEC-F-016 | RECORD | Record console and serial logins"
+  when: manager_sec_f_016
+  tags:
+    - host_access
+    - sec_f_016
+    - record
+  ansible.builtin.template:
+    src: host_access/record/sec_f_016.xml.j2
+    dest: /var/ossec/etc/rules/sec_f_016.xml
+    owner: wazuh
+    group: wazuh
+    mode: "0660"
+  notify:
+    - Test the manager rules
+    - Restart wazuh-manager

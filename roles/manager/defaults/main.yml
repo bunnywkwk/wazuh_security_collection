@@ -1,0 +1,50 @@
+---
+# bunnywkwk.wazuh_security manager defaults. Override in group_vars.
+
+## Groups
+manager_host_access: true
+
+## Rules
+# false = skipped (a file deployed earlier stays: delete it by hand)
+
+## Group: Host Access (rule IDs 100110-100129)
+manager_sec_f_001: true   # RECORD successful SSH login
+manager_sec_f_002: true   # RECORD failed SSH login (also deployed for SEC-F-003)
+manager_sec_f_003: true   # THRESHOLD brute force, SEC-TH-001 to 005
+manager_sec_f_004: true   # RECORD logout
+manager_sec_f_016: true   # RECORD console login; GAP: BMC access
+
+## Settings
+
+### SEC-F-003
+manager_silence_5763: true   # built-in 5763 to level 0, it steals the 8th failure
+# Account lists, read from these hosts' /etc/passwd and /etc/login.defs
+manager_account_hosts: "{{ groups['wazuh_agents'] | default([]) }}"
+manager_nologin_shells: [/sbin/nologin, /usr/sbin/nologin, /bin/false, /usr/bin/false]
+manager_service_account_patterns: ["^svc_"]   # always service accounts
+
+#### SEC-TH-001 service accounts
+manager_th_001_warning: 3
+manager_th_001_critical: 5
+manager_th_001_timeframe: 600
+
+#### SEC-TH-002 standard accounts
+manager_th_002_warning: 5
+manager_th_002_critical: 8
+manager_th_002_timeframe: 300
+
+#### SEC-TH-003 privileged accounts
+manager_th_003_users: "^(root|frqadmin)$"
+manager_th_003_warning: 3
+manager_th_003_critical: 5
+manager_th_003_timeframe: 300
+
+#### SEC-TH-004 one source, any accounts
+manager_th_004_warning: 10
+manager_th_004_critical: 20
+manager_th_004_timeframe: 300
+
+#### SEC-TH-005 password spraying
+manager_th_005_warning: 5
+manager_th_005_critical: 10
+manager_th_005_timeframe: 1800

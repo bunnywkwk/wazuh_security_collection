@@ -1,0 +1,9 @@
+<!-- {{ ansible_managed }} -->
+<!-- SEC-F-003: built-in 5763 unchanged except level 0, so it no longer takes failures away from the count -->
+<group name="host_access,">
+  <rule id="5763" level="0" frequency="8" timeframe="120" overwrite="yes">
+    <if_matched_sid>5760</if_matched_sid>
+    <same_srcip />
+    <description>sshd brute force (built-in 5763) silenced: SEC-TH-002 to 005 cover it.</description>
+  </rule>
+</group>

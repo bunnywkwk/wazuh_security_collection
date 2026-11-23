@@ -1,0 +1,11 @@
+---
+# Handlers run in this order: a failed test stops the play before the restart.
+# shortcut: the bad file stays in place, fix it and rerun before the manager restarts
+- name: Test the manager rules
+  ansible.builtin.command: /var/ossec/bin/wazuh-analysisd -t
+  changed_when: false
+
+- name: Restart wazuh-manager
+  ansible.builtin.systemd_service:
+    name: wazuh-manager
+    state: restarted

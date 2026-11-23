@@ -1,0 +1,16 @@
+---
+- name: "SEC-F-002 | RECORD | Record failed SSH logins"
+  when: manager_sec_f_002 or manager_sec_f_003   # SEC-F-003 counts this rule
+  tags:
+    - host_access
+    - sec_f_002
+    - record
+  ansible.builtin.template:
+    src: host_access/record/sec_f_002.xml.j2
+    dest: /var/ossec/etc/rules/sec_f_002.xml
+    owner: wazuh
+    group: wazuh
+    mode: "0660"
+  notify:
+    - Test the manager rules
+    - Restart wazuh-manager

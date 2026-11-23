@@ -1,0 +1,97 @@
+---
+- name: "SEC-F-003 | THRESHOLD | Alert on brute force"
+  when: manager_sec_f_003
+  tags:
+    - host_access
+    - sec_f_003
+    - threshold
+  block:
+    - name: "SEC-F-003 | THRESHOLD | Alert on brute force | Check there are hosts to read accounts from"
+      ansible.builtin.assert:
+        that: manager_account_hosts | length > 0
+        fail_msg: "manager_account_hosts is empty: SEC-TH-001 and 002 need the agents' /etc/passwd."
+        quiet: true
+
+    - name: "SEC-F-003 | THRESHOLD | Alert on brute force | Read /etc/passwd on each host"
+      ansible.builtin.getent:
+        database: passwd
+      delegate_to: "{{ item }}"
+      loop: "{{ manager_account_hosts }}"
+      register: manager_passwd
+
+    - name: "SEC-F-003 | THRESHOLD | Alert on brute force | Read /etc/login.defs on each host"
+      ansible.builtin.slurp:
+        src: /etc/login.defs
+      delegate_to: "{{ item }}"
+      loop: "{{ manager_account_hosts }}"
+      register: manager_login_defs
+
+    - name: "SEC-F-003 | THRESHOLD | Alert on brute force | Sort the accounts into service and standard"
+      vars:
+        manager_accounts: "{{ manager_passwd.results | map(attribute='ansible_facts.getent_passwd')
+          | zip(manager_login_defs.results | map(attribute='content') | map('b64decode'))
+          | bunnywkwk.wazuh_security.sort_accounts(manager_nologin_shells, manager_service_account_patterns) }}"
+      ansible.builtin.set_fact:
+        manager_service_accounts: "{{ manager_accounts.service }}"
+        manager_standard_accounts: "{{ manager_accounts.standard }}"
+
+    - name: "SEC-F-003 | LIST | Alert on brute force | Write the account lists"
+      ansible.builtin.template:
+        src: host_access/list/accounts.j2
+        dest: "/var/ossec/etc/lists/{{ item.name }}"
+        owner: wazuh
+        group: wazuh
+        mode: "0660"
+      loop:
+        - {name: service-accounts, what: service accounts (SEC-TH-001), names: "{{ manager_service_accounts }}"}
+        - {name: standard-accounts, what: standard accounts (SEC-TH-002), names: "{{ manager_standard_accounts }}"}
+      loop_control:
+        label: "{{ item.name }}"
+      notify:
+        - Test the manager rules
+        - Restart wazuh-manager
+
+    # Wazuh loads only the lists declared in ossec.conf
+    - name: "SEC-F-003 | LIST | Alert on brute force | Declare the account lists in ossec.conf"
+      ansible.builtin.lineinfile:
+        path: /var/ossec/etc/ossec.conf
+        line: "    <list>etc/lists/{{ item }}</list>"
+        insertbefore: '^\s*</ruleset>'
+        firstmatch: true
+      loop:
+        - service-accounts
+        - standard-accounts
+      notify:
+        - Test the manager rules
+        - Restart wazuh-manager
+
+    - name: "SEC-F-003 | THRESHOLD | Alert on brute force | SEC-TH-001 to 005"
+      ansible.builtin.template:
+        src: "host_access/threshold/{{ item }}.xml.j2"
+        dest: "/var/ossec/etc/rules/{{ item }}.xml"
+        owner: wazuh
+        group: wazuh
+        mode: "0660"
+      loop:
+        - sec_th_001   # service accounts
+        - sec_th_002   # standard accounts, per account and source
+        - sec_th_003   # privileged accounts
+        - sec_th_004   # distributed guessing, one source
+        - sec_th_005   # password spraying, one source
+      notify:
+        - Test the manager rules
+        - Restart wazuh-manager
+
+    - name: "SEC-F-003 | OVERWRITE | Alert on brute force | Silence built-in 5763"
+      when: manager_silence_5763
+      tags:
+        - overwrite
+      ansible.builtin.template:
+        src: host_access/overwrite/silence_5763.xml.j2
+        dest: /var/ossec/etc/rules/silence_5763.xml
+        owner: wazuh
+        group: wazuh
+        mode: "0660"
+      notify:
+        - Test the manager rules
+        - Restart wazuh-manager

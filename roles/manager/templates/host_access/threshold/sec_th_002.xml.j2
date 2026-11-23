@@ -1,0 +1,24 @@
+<!-- {{ ansible_managed }} -->
+<!-- SEC-TH-002 THRESHOLD (SEC-F-003): standard accounts, same account from the same source,
+     CDB list etc/lists/standard-accounts -->
+<group name="host_access,">
+  <rule id="100114" level="8" frequency="{{ manager_th_002_warning }}" timeframe="{{ manager_th_002_timeframe }}">
+    <if_matched_sid>100111</if_matched_sid>
+    <list field="dstuser" lookup="match_key">etc/lists/standard-accounts</list>
+    <same_user />
+    <same_srcip />
+    <description>SEC-TH-002 WARNING: $(dstuser) failed login {{ manager_th_002_warning }} times in {{ manager_th_002_timeframe // 60 }} minutes from $(srcip).</description>
+    <mitre><id>T1110.001</id></mitre>
+    <group>sec_f_003,sec_th_002,</group>
+  </rule>
+
+  <rule id="100115" level="12" frequency="{{ manager_th_002_critical }}" timeframe="{{ manager_th_002_timeframe }}">
+    <if_matched_sid>100111</if_matched_sid>
+    <list field="dstuser" lookup="match_key">etc/lists/standard-accounts</list>
+    <same_user />
+    <same_srcip />
+    <description>SEC-TH-002 CRITICAL: $(dstuser) failed login {{ manager_th_002_critical }} times in {{ manager_th_002_timeframe // 60 }} minutes from $(srcip).</description>
+    <mitre><id>T1110.001</id></mitre>
+    <group>sec_f_003,sec_th_002,</group>
+  </rule>
+</group>
