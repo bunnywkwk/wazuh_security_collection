@@ -38,10 +38,5 @@ manager_spraying_timeframe: 1800
 
 ## Privileged Activity
 
-#### SEC-TH-007 failed elevation, one account
-manager_elevation_failed_warning: 3
-manager_elevation_failed_critical: 5
-manager_elevation_failed_timeframe: 600
-
 ### SEC-F-019
 manager_root_login_users: "^root$"

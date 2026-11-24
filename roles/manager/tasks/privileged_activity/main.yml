@@ -1,8 +1,4 @@
 ---
-- name: "GROUP | SEC-F-018 | Failed elevation"
-  ansible.builtin.import_tasks:
-    file: sec_f_018.yml
-
 - name: "GROUP | SEC-F-019 | Direct root login"
   ansible.builtin.import_tasks:
     file: sec_f_019.yml
