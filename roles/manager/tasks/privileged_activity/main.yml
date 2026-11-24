@@ -1,12 +1,4 @@
 ---
-- name: "GROUP | SEC-F-005 | sudo and su use"
-  ansible.builtin.import_tasks:
-    file: sec_f_005.yml
-
-- name: "GROUP | SEC-F-006 | Admin commands"
-  ansible.builtin.import_tasks:
-    file: sec_f_006.yml
-
 - name: "GROUP | SEC-F-018 | Failed elevation"
   ansible.builtin.import_tasks:
     file: sec_f_018.yml

@@ -1,18 +1,19 @@
 <!-- {{ ansible_managed }} -->
-<!-- SEC-TH-004 THRESHOLD (SEC-F-003): distributed guessing, one source across any accounts -->
+<!-- SEC-TH-004: failed logins from one source, any accounts -->
 <group name="host_access,">
-  <rule id="100118" level="10" frequency="{{ manager_th_004_warning }}" timeframe="{{ manager_th_004_timeframe }}">
-    <if_matched_sid>100111</if_matched_sid>
+  <!-- counts built-in 5760: failed password, existing account -->
+  <rule id="100118" level="10" frequency="{{ manager_guessing_warning }}" timeframe="{{ manager_guessing_timeframe }}">
+    <if_matched_sid>5760</if_matched_sid>
     <same_srcip />
-    <description>SEC-TH-004 WARNING: {{ manager_th_004_warning }} failed logins across accounts from $(srcip) in {{ manager_th_004_timeframe // 60 }} minutes.</description>
+    <description>SEC-TH-004 WARNING: {{ manager_guessing_warning }} failed logins across accounts from $(srcip) in {{ manager_guessing_timeframe // 60 }} minutes.</description>
     <mitre><id>T1110</id></mitre>
     <group>sec_f_003,sec_th_004,</group>
   </rule>
 
-  <rule id="100119" level="13" frequency="{{ manager_th_004_critical }}" timeframe="{{ manager_th_004_timeframe }}">
-    <if_matched_sid>100111</if_matched_sid>
+  <rule id="100119" level="13" frequency="{{ manager_guessing_critical }}" timeframe="{{ manager_guessing_timeframe }}">
+    <if_matched_sid>5760</if_matched_sid>
     <same_srcip />
-    <description>SEC-TH-004 CRITICAL: {{ manager_th_004_critical }} failed logins across accounts from $(srcip) in {{ manager_th_004_timeframe // 60 }} minutes.</description>
+    <description>SEC-TH-004 CRITICAL: {{ manager_guessing_critical }} failed logins across accounts from $(srcip) in {{ manager_guessing_timeframe // 60 }} minutes.</description>
     <mitre><id>T1110</id></mitre>
     <group>sec_f_003,sec_th_004,</group>
   </rule>

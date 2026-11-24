@@ -1,6 +1,6 @@
 ---
 - name: "SEC-F-006 | AUDIT RULE | Record admin commands run as root"
-  when: agent_sec_f_006
+  when: agent_admin_commands
   tags:
     - privileged_activity
     - sec_f_006
@@ -10,12 +10,12 @@
     - name: "SEC-F-006 | AUDIT RULE | Record admin commands run as root | Find the installed commands"
       ansible.builtin.stat:
         path: "{{ item }}"
-      loop: "{{ agent_sec_f_006_commands }}"
-      register: agent_sec_f_006_stat
+      loop: "{{ agent_admin_command_paths }}"
+      register: agent_admin_command_paths_stat
 
     - name: "SEC-F-006 | AUDIT RULE | Record admin commands run as root | Write the audit rule"
       vars:
-        agent_sec_f_006_installed: "{{ agent_sec_f_006_stat.results | selectattr('stat.exists') | map(attribute='item') | list }}"
+        agent_admin_command_paths_installed: "{{ agent_admin_command_paths_stat.results | selectattr('stat.exists') | map(attribute='item') | list }}"
       ansible.builtin.template:
         src: privileged_activity/audit/sec_f_006.rules.j2
         dest: /etc/audit/rules.d/50-wazuh-sec_f_006.rules

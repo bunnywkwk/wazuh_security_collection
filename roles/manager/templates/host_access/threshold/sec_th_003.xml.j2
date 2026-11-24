@@ -1,20 +1,21 @@
 <!-- {{ ansible_managed }} -->
-<!-- SEC-TH-003 THRESHOLD (SEC-F-003): privileged accounts -->
+<!-- SEC-TH-003: failed logins, one privileged account -->
 <group name="host_access,">
-  <rule id="100116" level="10" frequency="{{ manager_th_003_warning }}" timeframe="{{ manager_th_003_timeframe }}">
-    <if_matched_sid>100111</if_matched_sid>
-    <user type="pcre2">{{ manager_th_003_users }}</user>
+  <!-- counts built-in 5760: failed password, existing account -->
+  <rule id="100116" level="10" frequency="{{ manager_privileged_account_warning }}" timeframe="{{ manager_privileged_account_timeframe }}">
+    <if_matched_sid>5760</if_matched_sid>
+    <user type="pcre2">{{ manager_privileged_accounts }}</user>
     <same_user />
-    <description>SEC-TH-003 WARNING: privileged account $(dstuser) failed login {{ manager_th_003_warning }} times in {{ manager_th_003_timeframe // 60 }} minutes.</description>
+    <description>SEC-TH-003 WARNING: privileged account $(dstuser) failed login {{ manager_privileged_account_warning }} times in {{ manager_privileged_account_timeframe // 60 }} minutes.</description>
     <mitre><id>T1110.001</id></mitre>
     <group>sec_f_003,sec_th_003,</group>
   </rule>
 
-  <rule id="100117" level="14" frequency="{{ manager_th_003_critical }}" timeframe="{{ manager_th_003_timeframe }}">
-    <if_matched_sid>100111</if_matched_sid>
-    <user type="pcre2">{{ manager_th_003_users }}</user>
+  <rule id="100117" level="14" frequency="{{ manager_privileged_account_critical }}" timeframe="{{ manager_privileged_account_timeframe }}">
+    <if_matched_sid>5760</if_matched_sid>
+    <user type="pcre2">{{ manager_privileged_accounts }}</user>
     <same_user />
-    <description>SEC-TH-003 CRITICAL: privileged account $(dstuser) failed login {{ manager_th_003_critical }} times in {{ manager_th_003_timeframe // 60 }} minutes.</description>
+    <description>SEC-TH-003 CRITICAL: privileged account $(dstuser) failed login {{ manager_privileged_account_critical }} times in {{ manager_privileged_account_timeframe // 60 }} minutes.</description>
     <mitre><id>T1110.001</id></mitre>
     <group>sec_f_003,sec_th_003,</group>
   </rule>

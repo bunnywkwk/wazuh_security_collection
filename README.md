@@ -17,14 +17,15 @@ Groups: **Host Access**, **Privileged Activity**.
 | **list** | `list/` | names the rules look up (CDB list) | `etc/lists/service-accounts` for SEC-TH-001 |
 | **alert** | `record/` | a single event that is itself the finding | SEC-F-019 direct root login |
 | **audit rule** | agent `audit/` | the host must log it first | SEC-F-006 admin commands |
-| **gap** | none | the host cannot see it: no rule, written down in the defaults file | SEC-F-016 BMC access |
+| **gap** | none | the host cannot see it: no rule, written down in `defaults/main/toggles.yml` | SEC-F-016 BMC access |
 
 ## Layout
 
 Same layout as the CIS roles: a task folder per group, a task file per requirement, templates split by kind.
 
 ```
-roles/manager/defaults/main.yml                   group switch, one switch per requirement + its settings
+roles/manager/defaults/main/toggles.yml      group switches, one switch per requirement
+roles/manager/defaults/main/main.yml          values per requirement (thresholds, lists)
 roles/manager/tasks/main.yml                      imports each group when its switch is on
 roles/manager/tasks/host_access/main.yml          imports each requirement file
 roles/manager/tasks/host_access/sec_f_001.yml     "SEC-F-001 | RECORD | Record successful SSH logins"
@@ -34,6 +35,8 @@ roles/manager/templates/host_access/overwrite/    silence_5763
 roles/manager/templates/host_access/list/         accounts.j2 -> etc/lists/service-accounts, standard-accounts
 roles/manager/templates/privileged_activity/record/      sec_f_005, 006, 018, 019
 roles/manager/templates/privileged_activity/threshold/   sec_th_007
+roles/agent/defaults/main/toggles.yml        switches, same names as the manager ones they feed
+roles/agent/defaults/main/main.yml            command list
 roles/agent/tasks/privileged_activity/sec_f_006.yml       "SEC-F-006 | AUDIT RULE | Record admin commands run as root"
 roles/agent/templates/privileged_activity/audit/          sec_f_006.rules
 plugins/filter/accounts.py                        filter sort_accounts
@@ -105,24 +108,42 @@ ansible-galaxy collection install -r requirements.yml --force
 
 ## Variables
 
-`roles/manager/defaults/main.yml`: `## Groups` switch, `## Rules` with one switch per requirement, then `## Settings` with what each rule needs under its ID.
+Each role splits its defaults in two files (Ansible loads every file in `defaults/main/`):
+
+- `defaults/main/toggles.yml`: the group switches, then one switch per requirement, named after the requirement, with its sheet ID and rule IDs in the comment.
+- `defaults/main/main.yml`: the values each requirement needs (Annex B thresholds, account and command lists), under its sheet ID.
+
+A requirement with a part on both sides has the same name in both roles, only the prefix differs: `manager_admin_commands` (rule 100105) and `agent_admin_commands` (the audit rule it reads). Keep the two equal.
 
 ```
 manager_host_access                 group switch
-manager_sec_f_001 ... 016           one per requirement
-manager_th_001_* ... 005_*          Annex B warning / critical / timeframe
-manager_service_account_patterns   local names that are service accounts whatever UID and shell (default ["^svc_"])
-manager_th_003_users                privileged accounts regex
+manager_login_success               SEC-F-001
+manager_login_failed                SEC-F-002
+manager_brute_force                 SEC-F-003
+manager_logout                      SEC-F-004
+manager_console_login               SEC-F-016
+manager_service_account_*           SEC-TH-001 warning / critical / timeframe
+manager_standard_account_*          SEC-TH-002
+manager_privileged_accounts         SEC-TH-003 privileged accounts regex
+manager_privileged_account_*        SEC-TH-003
+manager_guessing_*                  SEC-TH-004
+manager_spraying_*                  SEC-TH-005
+manager_service_account_patterns    local names that are service accounts whatever UID and shell (default ["^svc_"])
 manager_account_hosts               hosts whose /etc/passwd is read (default: inventory group wazuh_agents)
 manager_nologin_shells              shells that cannot log in
-manager_silence_5763
+manager_silence_5763                built-in 5763 to level 0
 manager_privileged_activity         group switch
-manager_sec_f_005 ... 019           one per requirement
-manager_th_007_*                    Annex B warning / critical / timeframe
-manager_sec_f_019_users             accounts a direct login to is an alert (default "^root$")
-```
+manager_elevation_success           SEC-F-005
+manager_admin_commands              SEC-F-006 (agent part: agent_admin_commands)
+manager_elevation_failed            SEC-F-018
+manager_elevation_failed_*          SEC-TH-007 warning / critical / timeframe
+manager_root_login                  SEC-F-019
+manager_root_login_users            SEC-F-019 accounts a direct login to is an alert (default "^root$")
 
-`roles/agent/defaults/main.yml`: `agent_privileged_activity`, `agent_sec_f_006`, `agent_sec_f_006_commands` (paths audited; only the installed ones get a line).
+agent_privileged_activity           group switch
+agent_admin_commands                SEC-F-006 audit rule
+agent_admin_command_paths           SEC-F-006 paths audited; only the installed ones get a line
+```
 
 ### Service and standard account lists (SEC-TH-001, 002)
 
@@ -143,7 +164,7 @@ Built-in rule IDs, match phrases and the audit key `audit-wazuh-c` are written i
 
 1. The template in `roles/manager/templates/<group>/<kind>/`.
 2. `roles/manager/tasks/<group>/sec_f_<nnn>.yml`: copy a sibling, change the ID, title, switch and template path.
-3. Import it in `roles/manager/tasks/<group>/main.yml`; add `manager_sec_f_<nnn>: true` under its group in the defaults.
+3. Import it in `roles/manager/tasks/<group>/main.yml`; add its switch to `defaults/main/toggles.yml` (named after the requirement, sheet ID and rule IDs in the comment) and its values to `main.yml`. An agent part gets the same name in the agent role.
 4. A new group: one more folder in `tasks/` and `templates/`, one import in `tasks/main.yml`, one group switch.
 
 ## Notes

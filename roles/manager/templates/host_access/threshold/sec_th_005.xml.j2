@@ -1,20 +1,21 @@
 <!-- {{ ansible_managed }} -->
-<!-- SEC-TH-005 THRESHOLD (SEC-F-003): password spraying, one source across distinct accounts -->
+<!-- SEC-TH-005: password spraying, different accounts from one source -->
 <group name="host_access,">
-  <rule id="100120" level="10" frequency="{{ manager_th_005_warning }}" timeframe="{{ manager_th_005_timeframe }}">
-    <if_matched_sid>100111</if_matched_sid>
+  <!-- counts built-in 5760: failed password, existing account -->
+  <rule id="100120" level="10" frequency="{{ manager_spraying_warning }}" timeframe="{{ manager_spraying_timeframe }}">
+    <if_matched_sid>5760</if_matched_sid>
     <same_srcip />
     <different_user />
-    <description>SEC-TH-005 WARNING: password spraying from $(srcip), {{ manager_th_005_warning }} accounts in {{ manager_th_005_timeframe // 60 }} minutes.</description>
+    <description>SEC-TH-005 WARNING: password spraying from $(srcip), {{ manager_spraying_warning }} accounts in {{ manager_spraying_timeframe // 60 }} minutes.</description>
     <mitre><id>T1110.003</id></mitre>
     <group>sec_f_003,sec_th_005,</group>
   </rule>
 
-  <rule id="100121" level="13" frequency="{{ manager_th_005_critical }}" timeframe="{{ manager_th_005_timeframe }}">
-    <if_matched_sid>100111</if_matched_sid>
+  <rule id="100121" level="13" frequency="{{ manager_spraying_critical }}" timeframe="{{ manager_spraying_timeframe }}">
+    <if_matched_sid>5760</if_matched_sid>
     <same_srcip />
     <different_user />
-    <description>SEC-TH-005 CRITICAL: password spraying from $(srcip), {{ manager_th_005_critical }} accounts in {{ manager_th_005_timeframe // 60 }} minutes.</description>
+    <description>SEC-TH-005 CRITICAL: password spraying from $(srcip), {{ manager_spraying_critical }} accounts in {{ manager_spraying_timeframe // 60 }} minutes.</description>
     <mitre><id>T1110.003</id></mitre>
     <group>sec_f_003,sec_th_005,</group>
   </rule>

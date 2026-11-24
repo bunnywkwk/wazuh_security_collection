@@ -1,20 +1,21 @@
 <!-- {{ ansible_managed }} -->
-<!-- SEC-TH-001 THRESHOLD (SEC-F-003): service accounts, CDB list etc/lists/service-accounts -->
+<!-- SEC-TH-001: failed logins, one service account (list service-accounts) -->
 <group name="host_access,">
-  <rule id="100112" level="8" frequency="{{ manager_th_001_warning }}" timeframe="{{ manager_th_001_timeframe }}">
-    <if_matched_sid>100111</if_matched_sid>
+  <!-- counts built-in 5760: failed password, existing account -->
+  <rule id="100112" level="8" frequency="{{ manager_service_account_warning }}" timeframe="{{ manager_service_account_timeframe }}">
+    <if_matched_sid>5760</if_matched_sid>
     <list field="user" lookup="match_key">etc/lists/service-accounts</list>
     <same_user />
-    <description>SEC-TH-001 WARNING: service account $(dstuser) failed login {{ manager_th_001_warning }} times in {{ manager_th_001_timeframe // 60 }} minutes.</description>
+    <description>SEC-TH-001 WARNING: service account $(dstuser) failed login {{ manager_service_account_warning }} times in {{ manager_service_account_timeframe // 60 }} minutes.</description>
     <mitre><id>T1110.001</id></mitre>
     <group>sec_f_003,sec_th_001,</group>
   </rule>
 
-  <rule id="100113" level="12" frequency="{{ manager_th_001_critical }}" timeframe="{{ manager_th_001_timeframe }}">
-    <if_matched_sid>100111</if_matched_sid>
+  <rule id="100113" level="12" frequency="{{ manager_service_account_critical }}" timeframe="{{ manager_service_account_timeframe }}">
+    <if_matched_sid>5760</if_matched_sid>
     <list field="user" lookup="match_key">etc/lists/service-accounts</list>
     <same_user />
-    <description>SEC-TH-001 CRITICAL: service account $(dstuser) failed login {{ manager_th_001_critical }} times in {{ manager_th_001_timeframe // 60 }} minutes.</description>
+    <description>SEC-TH-001 CRITICAL: service account $(dstuser) failed login {{ manager_service_account_critical }} times in {{ manager_service_account_timeframe // 60 }} minutes.</description>
     <mitre><id>T1110.001</id></mitre>
     <group>sec_f_003,sec_th_001,</group>
   </rule>

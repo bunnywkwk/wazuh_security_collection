@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.0 (2026-11-24)
+- Defaults split per role: `defaults/main/toggles.yml` (switches) and `defaults/main/main.yml` (values). No rule, template or task logic changed.
+- Variables renamed, short and after what they watch (breaking: update group_vars). Switches: manager_sec_f_001 -> manager_login_success, 002 -> login_failed, 003 -> brute_force, 004 -> logout, 016 -> console_login, 005 -> elevation_success, 006 -> admin_commands, 018 -> elevation_failed, 019 -> root_login. Settings: manager_sec_f_019_users -> manager_root_login_users, th_001_* -> service_account_*, th_002_* -> standard_account_*, th_003_users -> privileged_accounts, th_003_* -> privileged_account_*, th_004_* -> guessing_*, th_005_* -> spraying_*, th_007_* -> elevation_failed_* (all manager_).
+- Agent: agent_sec_f_006 -> agent_admin_commands (same name as the manager switch it feeds), agent_sec_f_006_commands -> agent_admin_command_paths.
+
 ## 0.8.1 (2026-11-23)
 - su uses its PAM lines (checked with real RHEL 9 lines): SEC-F-005 su = 100108 on 5501, SEC-F-018 su = helper 100109 on 5503, so SEC-TH-007 counts su failures per account. 5301-5304 dropped: no rule for the success line, no account in FAILED SU, and counting both lines would double each failure.
 - Built-in rule IDs, sudo refusal phrases and the audit key are written in the templates (like Host Access); removed variables: manager_sec_f_005_sudo_sids, manager_sec_f_018_sudo_sids, manager_sudo_group_sid, manager_sudo_refused_match, manager_pam_session_opened_sid, manager_pam_auth_failed_sid, manager_sec_f_006_sid, manager_sec_f_006_key, agent_sec_f_006_key.

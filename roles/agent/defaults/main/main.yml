@@ -1,0 +1,17 @@
+---
+## Privileged Activity
+
+### SEC-F-006 admin commands to audit (only installed ones get a rule)
+agent_admin_command_paths:
+  - /usr/sbin/useradd
+  - /usr/sbin/userdel
+  - /usr/sbin/usermod
+  - /usr/sbin/groupadd
+  - /usr/sbin/groupdel
+  - /usr/sbin/groupmod
+  - /usr/bin/passwd
+  - /usr/bin/chage
+  - /usr/sbin/visudo
+  - /usr/sbin/setenforce
+  - /usr/bin/firewall-cmd
+  - /usr/sbin/auditctl

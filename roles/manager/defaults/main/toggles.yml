@@ -1,0 +1,11 @@
+---
+# One toggle per requirement that has code. The rest use Wazuh built-in rules (listed).
+
+## Host Access
+# built-in: SEC-F-001 5715, SEC-F-002 5760 / 5710, SEC-F-004 5502, SEC-F-016 5501
+manager_brute_force: true        # SEC-F-003, SEC-TH-001 to 005
+
+## Privileged Activity
+# built-in: SEC-F-005 5402 / 5403 / 5407 / 5501, SEC-F-006 80792 (agent audit rule)
+manager_elevation_failed: true   # SEC-F-018, SEC-TH-007
+manager_root_login: true         # SEC-F-019

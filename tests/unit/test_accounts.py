@@ -15,19 +15,17 @@ PASSWD = {
     'nobody': ['x', '65534', '65534', 'Kernel Overflow User', '/', '/usr/sbin/nologin'],
     'olduser': ['x', '500', '500', '', '/home/olduser', '/bin/bash'],
 }
-DEFS = "# comment\nUID_MIN                  1000\nUID_MAX                 60000\nPASS_MAX_DAYS 99999\n"
 SHELLS = ['/sbin/nologin', '/usr/sbin/nologin', '/bin/false', '/usr/bin/false']
 
-got = sort_accounts([[PASSWD, DEFS]], SHELLS)
+got = sort_accounts([PASSWD], 1000, 60000, SHELLS)
 assert got['standard'] == ['frqadmin', 'svc_report'], got
 assert got['service'] == ['daemon', 'nginx', 'nobody', 'olduser', 'svc_backup'], got
-assert 'svc_report' in got['standard'], got
 # A name pattern moves a normal-looking account to service
-got = sort_accounts([[PASSWD, DEFS]], SHELLS, ['^svc_'])
+got = sort_accounts([PASSWD], 1000, 60000, SHELLS, ['^svc_'])
 assert got['standard'] == ['frqadmin'], got
 assert 'svc_report' in got['service'], got
-# UID_MIN differs per host: olduser is standard on the second host, so it is in both lists
-got = sort_accounts([[PASSWD, DEFS], [PASSWD, "UID_MIN 500\n"]], SHELLS)
-assert got['standard'] == ['frqadmin', 'olduser', 'svc_report'], got
-assert 'olduser' in got['service'], got
+# Two hosts: a name standard on one and service on the other is in both lists
+other = {'olduser': ['x', '1500', '1500', '', '/home/olduser', '/bin/bash']}
+got = sort_accounts([PASSWD, other], 1000, 60000, SHELLS)
+assert 'olduser' in got['standard'] and 'olduser' in got['service'], got
 print('ok')

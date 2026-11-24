@@ -1,0 +1,47 @@
+---
+## Host Access
+
+### SEC-F-003
+manager_silence_5763: true   # built-in 5763 takes the 8th failure from our thresholds
+manager_account_hosts: "{{ groups['wazuh_agents'] | default([]) }}"   # /etc/passwd read from these
+# shortcut: RHEL 8/9/10 login.defs UID_MIN / UID_MAX, not read per host; set them if a host differs
+manager_standard_uid_min: 1000
+manager_standard_uid_max: 60000
+manager_nologin_shells: [/sbin/nologin, /usr/sbin/nologin, /bin/false, /usr/bin/false]
+manager_service_account_patterns: ["^svc_"]
+
+#### SEC-TH-001 service account
+manager_service_account_warning: 3
+manager_service_account_critical: 5
+manager_service_account_timeframe: 600
+
+#### SEC-TH-002 standard account
+manager_standard_account_warning: 5
+manager_standard_account_critical: 8
+manager_standard_account_timeframe: 300
+
+#### SEC-TH-003 privileged account
+manager_privileged_accounts: "^(root|frqadmin)$"
+manager_privileged_account_warning: 3
+manager_privileged_account_critical: 5
+manager_privileged_account_timeframe: 300
+
+#### SEC-TH-004 one source, any accounts
+manager_guessing_warning: 10
+manager_guessing_critical: 20
+manager_guessing_timeframe: 300
+
+#### SEC-TH-005 password spraying
+manager_spraying_warning: 5
+manager_spraying_critical: 10
+manager_spraying_timeframe: 1800
+
+## Privileged Activity
+
+#### SEC-TH-007 failed elevation, one account
+manager_elevation_failed_warning: 3
+manager_elevation_failed_critical: 5
+manager_elevation_failed_timeframe: 600
+
+### SEC-F-019
+manager_root_login_users: "^root$"

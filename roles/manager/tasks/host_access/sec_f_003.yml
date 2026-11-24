@@ -1,6 +1,6 @@
 ---
 - name: "SEC-F-003 | THRESHOLD | Alert on brute force"
-  when: manager_sec_f_003
+  when: manager_brute_force
   tags:
     - host_access
     - sec_f_003
@@ -19,18 +19,11 @@
       loop: "{{ manager_account_hosts }}"
       register: manager_passwd
 
-    - name: "SEC-F-003 | THRESHOLD | Alert on brute force | Read /etc/login.defs on each host"
-      ansible.builtin.slurp:
-        src: /etc/login.defs
-      delegate_to: "{{ item }}"
-      loop: "{{ manager_account_hosts }}"
-      register: manager_login_defs
-
     - name: "SEC-F-003 | THRESHOLD | Alert on brute force | Sort the accounts into service and standard"
       vars:
         manager_accounts: "{{ manager_passwd.results | map(attribute='ansible_facts.getent_passwd')
-          | zip(manager_login_defs.results | map(attribute='content') | map('b64decode'))
-          | bunnywkwk.wazuh_security.sort_accounts(manager_nologin_shells, manager_service_account_patterns) }}"
+          | bunnywkwk.wazuh_security.sort_accounts(manager_standard_uid_min, manager_standard_uid_max,
+            manager_nologin_shells, manager_service_account_patterns) }}"
       ansible.builtin.set_fact:
         manager_service_accounts: "{{ manager_accounts.service }}"
         manager_standard_accounts: "{{ manager_accounts.standard }}"
@@ -58,7 +51,7 @@
         line: "    <list>etc/lists/{{ item }}</list>"
         insertbefore: '^\s*</ruleset>'
         firstmatch: true
-        backup: true   # ossec.conf.<date>~ next to it, written only when a line is added
+        backup: true
       loop:
         - service-accounts
         - standard-accounts
@@ -74,11 +67,11 @@
         group: wazuh
         mode: "0660"
       loop:
-        - sec_th_001   # service accounts
-        - sec_th_002   # standard accounts, per account and source
-        - sec_th_003   # privileged accounts
-        - sec_th_004   # distributed guessing, one source
-        - sec_th_005   # password spraying, one source
+        - sec_th_001
+        - sec_th_002
+        - sec_th_003
+        - sec_th_004
+        - sec_th_005
       notify:
         - Test the manager rules
         - Restart wazuh-manager

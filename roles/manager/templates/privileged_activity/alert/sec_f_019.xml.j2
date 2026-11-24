@@ -1,0 +1,22 @@
+<!-- {{ ansible_managed }} -->
+<!-- SEC-F-019: login straight to root, instead of the built-in login record -->
+<group name="privileged_activity,">
+  <!-- 5715: sshd login -->
+  <rule id="100103" level="10">
+    <if_sid>5715</if_sid>
+    <user type="pcre2">{{ manager_root_login_users }}</user>
+    <description>SEC-F-019: direct SSH login to $(dstuser) from $(srcip).</description>
+    <mitre><id>T1078.003</id></mitre>
+    <group>sec_f_019,sshd,authentication_success,</group>
+  </rule>
+
+  <!-- 5501: PAM session opened; "login" = console -->
+  <rule id="100106" level="10">
+    <if_sid>5501</if_sid>
+    <match>(login:session)</match>
+    <user type="pcre2">{{ manager_root_login_users }}</user>
+    <description>SEC-F-019: direct console login to $(dstuser).</description>
+    <mitre><id>T1078.003</id></mitre>
+    <group>sec_f_019,pam,authentication_success,</group>
+  </rule>
+</group>

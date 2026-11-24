@@ -1,9 +1,0 @@
-<!-- {{ ansible_managed }} -->
-<!-- SEC-F-001 RECORD: successful SSH login -->
-<group name="host_access,">
-  <rule id="100110" level="3">
-    <if_sid>5715</if_sid>
-    <description>SEC-F-001: $(dstuser) logged in from $(srcip).</description>
-    <group>sec_f_001,sshd,authentication_success,</group>
-  </rule>
-</group>

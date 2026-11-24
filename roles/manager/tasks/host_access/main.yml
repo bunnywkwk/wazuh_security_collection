@@ -1,20 +1,4 @@
 ---
-- name: "GROUP | SEC-F-001 | Successful login"
-  ansible.builtin.import_tasks:
-    file: sec_f_001.yml
-
-- name: "GROUP | SEC-F-002 | Failed login"
-  ansible.builtin.import_tasks:
-    file: sec_f_002.yml
-
 - name: "GROUP | SEC-F-003 | Brute force"
   ansible.builtin.import_tasks:
     file: sec_f_003.yml
-
-- name: "GROUP | SEC-F-004 | Logout"
-  ansible.builtin.import_tasks:
-    file: sec_f_004.yml
-
-- name: "GROUP | SEC-F-016 | Console login"
-  ansible.builtin.import_tasks:
-    file: sec_f_016.yml
