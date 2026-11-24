@@ -1,25 +1,25 @@
 ---
-- name: "SEC-F-003 | THRESHOLD | Alert on brute force"
+- name: "SEC-F-003 | THRESHOLD | Count brute force"
   when: manager_brute_force
   tags:
     - host_access
     - sec_f_003
     - threshold
   block:
-    - name: "SEC-F-003 | THRESHOLD | Alert on brute force | Check there are hosts to read accounts from"
+    - name: "SEC-F-003 | THRESHOLD | Count brute force | Check there are hosts to read accounts from"
       ansible.builtin.assert:
         that: manager_account_hosts | length > 0
         fail_msg: "manager_account_hosts is empty: SEC-TH-001 and 002 need the agents' /etc/passwd."
         quiet: true
 
-    - name: "SEC-F-003 | THRESHOLD | Alert on brute force | Read /etc/passwd on each host"
+    - name: "SEC-F-003 | THRESHOLD | Count brute force | Read /etc/passwd on each host"
       ansible.builtin.getent:
         database: passwd
       delegate_to: "{{ item }}"
       loop: "{{ manager_account_hosts }}"
       register: manager_passwd
 
-    - name: "SEC-F-003 | THRESHOLD | Alert on brute force | Sort the accounts into service and standard"
+    - name: "SEC-F-003 | THRESHOLD | Count brute force | Sort the accounts into service and standard"
       vars:
         manager_accounts: "{{ manager_passwd.results | map(attribute='ansible_facts.getent_passwd')
           | bunnywkwk.wazuh_security.sort_accounts(manager_standard_uid_min, manager_standard_uid_max,
@@ -28,7 +28,7 @@
         manager_service_accounts: "{{ manager_accounts.service }}"
         manager_standard_accounts: "{{ manager_accounts.standard }}"
 
-    - name: "SEC-F-003 | LIST | Alert on brute force | Write the account lists"
+    - name: "SEC-F-003 | LIST | Count brute force | Write the account lists"
       ansible.builtin.template:
         src: host_access/list/accounts.j2
         dest: "/var/ossec/etc/lists/{{ item.name }}"
@@ -45,7 +45,7 @@
         - Restart wazuh-manager
 
     # Wazuh loads only the lists declared in ossec.conf
-    - name: "SEC-F-003 | LIST | Alert on brute force | Declare the account lists in ossec.conf"
+    - name: "SEC-F-003 | LIST | Count brute force | Declare the account lists in ossec.conf"
       ansible.builtin.lineinfile:
         path: /var/ossec/etc/ossec.conf
         line: "    <list>etc/lists/{{ item }}</list>"
@@ -59,7 +59,7 @@
         - Test the manager rules
         - Restart wazuh-manager
 
-    - name: "SEC-F-003 | THRESHOLD | Alert on brute force | SEC-TH-001 to 005"
+    - name: "SEC-F-003 | THRESHOLD | Count brute force | SEC-TH-001 to 005"
       ansible.builtin.template:
         src: "host_access/threshold/{{ item }}.xml.j2"
         dest: "/var/ossec/etc/rules/{{ item }}.xml"
@@ -76,7 +76,7 @@
         - Test the manager rules
         - Restart wazuh-manager
 
-    - name: "SEC-F-003 | OVERWRITE | Alert on brute force | Silence built-in 5763"
+    - name: "SEC-F-003 | OVERWRITE | Count brute force | Silence built-in 5763"
       when: manager_silence_5763
       tags:
         - overwrite

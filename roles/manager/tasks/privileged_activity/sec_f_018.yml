@@ -15,7 +15,7 @@
     - Test the manager rules
     - Restart wazuh-manager
 
-- name: "SEC-F-018 | THRESHOLD | Alert on failed elevation | SEC-TH-007"
+- name: "SEC-F-018 | THRESHOLD | Count failed elevation | SEC-TH-007"
   when: manager_elevation_failed
   tags:
     - privileged_activity

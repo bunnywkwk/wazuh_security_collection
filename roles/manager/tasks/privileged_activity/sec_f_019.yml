@@ -1,12 +1,12 @@
 ---
-- name: "SEC-F-019 | ALERT | Alert on direct root login"
+- name: "SEC-F-019 | RECORD | Record direct root login"
   when: manager_root_login
   tags:
     - privileged_activity
     - sec_f_019
-    - alert
+    - record
   ansible.builtin.template:
-    src: privileged_activity/alert/sec_f_019.xml.j2
+    src: privileged_activity/record/sec_f_019.xml.j2
     dest: /var/ossec/etc/rules/sec_f_019.xml
     owner: wazuh
     group: wazuh
